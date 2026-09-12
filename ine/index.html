@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>札幌発｜伊根・天橋立 三泊四日</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@500;600;700&family=Zen+Old+Mincho:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <style>
+    :root {
+      --ink: #2a2118;
+      --muted: #6a5848;
+      --washi: #efe4cc;
+      --plaster: #f6efe0;
+      --wood: #2c2118;
+      --wood-mid: #4a3426;
+      --beam: #3a2a1e;
+      --line: #b79a78;
+      --sea: #1b3a48;
+      --indigo: #3a5366;
+      --day1: #3a5366;
+      --day2: #8a4b2a;
+      --day3: #4a6150;
+      --day4: #5a4650;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; }
+    button, .stamp, .gmap, .panel, .warn, .marker, .sign, .kicker,
+    .leaflet-popup-content-wrapper, .leaflet-bar, .leaflet-bar a {
+      border-radius: 0;
+    }
+    body {
+      font-family: "Zen Old Mincho", "Hiragino Mincho ProN", "Yu Mincho", serif;
+      background-color: #cbb894;
+      background-image:
+        repeating-linear-gradient(90deg, rgba(74, 52, 38, 0.06) 0 1px, transparent 1px 11px),
+        repeating-linear-gradient(0deg, rgba(74, 52, 38, 0.045) 0 1px, transparent 1px 13px);
+      color: var(--ink);
+      line-height: 1.75;
+    }
+    a { color: var(--sea); text-underline-offset: 3px; }
+    .roof {
+      height: 34px;
+      background:
+        radial-gradient(ellipse 16px 12px at 10px 34px, #14100c 72%, transparent 73%) 0 0 / 20px 34px,
+        linear-gradient(#2a2118, #14100c);
+      box-shadow: 0 2px 0 #0d0a08;
+    }
+    .masthead {
+      background:
+        repeating-linear-gradient(90deg, #1e1610 0 16px, #3a2a1c 16px 17px, #2a1e14 17px 33px);
+      color: #2a2118;
+      position: relative;
+    }
+    .masthead::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        repeating-linear-gradient(90deg, transparent 0 27px, rgba(243, 230, 207, 0.16) 27px 28px),
+        repeating-linear-gradient(0deg, transparent 0 27px, rgba(243, 230, 207, 0.16) 27px 28px);
+      pointer-events: none;
+    }
+    .masthead::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(90deg, rgba(0,0,0,0.45), transparent 18%, transparent 82%, rgba(0,0,0,0.45));
+      pointer-events: none;
+    }
+    .masthead-inner {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 22px 20px 20px;
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      gap: 22px;
+      align-items: center;
+      position: relative;
+      z-index: 1;
+    }
+    .kicker {
+      writing-mode: vertical-rl;
+      font-family: "Shippori Mincho", serif;
+      letter-spacing: 0.45em;
+      font-size: 0.8rem;
+      margin: 0;
+      padding: 10px 7px;
+      color: #f3e6cf;
+      border: 1px solid rgba(243, 230, 207, 0.4);
+    }
+    .sign {
+      justify-self: start;
+      background: #f4ead4;
+      padding: 14px 28px 12px;
+      border: 1px solid #8a6a40;
+      box-shadow: inset 0 0 0 3px #f4ead4, inset 0 0 0 4px #b08a4a, 2px 3px 0 #14100c;
+    }
+    .home {
+      justify-self: end;
+      align-self: start;
+      color: #f3e6cf;
+      text-decoration: none;
+      border: 1px solid rgba(243, 230, 207, 0.4);
+      padding: 6px 10px;
+      letter-spacing: 0.18em;
+      font-size: 0.78rem;
+    }
+    .home:hover { background: rgba(243, 230, 207, 0.08); }
+    .masthead h1 {
+      font-family: "Shippori Mincho", serif;
+      font-size: clamp(1.55rem, 2.8vw, 2.15rem);
+      font-weight: 600;
+      letter-spacing: 0.16em;
+      margin: 0 0 6px;
+      line-height: 1.35;
+    }
+    .subtitle {
+      margin: 0;
+      letter-spacing: 0.5em;
+      font-size: 0.9rem;
+      color: #6a5848;
+    }
+    .beam {
+      height: 10px;
+      background:
+        repeating-linear-gradient(90deg, #3a2a1e 0 40px, #2a1e14 40px 42px, #4a3426 42px 80px);
+      box-shadow: 0 2px 0 #14100c;
+    }
+    .seigaiha {
+      height: 28px;
+      background-color: var(--sea);
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='36' height='20' viewBox='0 0 36 20'%3E%3Cpath fill='none' stroke='%23efe4cc' stroke-opacity='0.42' stroke-width='1.1' d='M-2 20c5-11 13-11 18 0s13 11 18 0 13-11 18 0'/%3E%3Cpath fill='none' stroke='%23efe4cc' stroke-opacity='0.22' stroke-width='1' d='M-2 20c5-6 13-6 18 0s13 6 18 0 13-6 18 0'/%3E%3C/svg%3E");
+    }
+    .house {
+      display: grid;
+      grid-template-columns: 22px minmax(0, 1180px) 22px;
+      justify-content: center;
+      background: var(--washi);
+    }
+    .post {
+      background:
+        repeating-linear-gradient(180deg, #241910 0 11px, #3a2a1c 11px 12px, #2c1f16 12px 23px);
+      box-shadow: inset 0 0 0 1px rgba(20, 16, 12, 0.4);
+    }
+    .wrap { padding: 30px 22px 28px; }
+    .lead {
+      color: var(--ink);
+      margin: 0 0 18px;
+      max-width: 42em;
+      font-size: 0.98rem;
+    }
+    .stamps { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
+    .views {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin: 0 0 22px;
+    }
+    .view {
+      margin: 0;
+      background: var(--plaster);
+      border: 1px solid var(--wood-mid);
+      box-shadow: inset 0 0 0 5px var(--plaster), inset 0 0 0 6px rgba(74, 52, 38, 0.22), 2px 2px 0 rgba(42, 33, 24, 0.12);
+      padding: 10px 10px 8px;
+    }
+    .view img {
+      display: block;
+      width: 100%;
+      height: auto;
+      aspect-ratio: 16 / 9;
+      object-fit: cover;
+      background: #d8cbb0;
+    }
+    .view figcaption {
+      margin: 8px 2px 2px;
+      font-family: "Shippori Mincho", serif;
+      letter-spacing: 0.28em;
+      font-size: 0.82rem;
+      text-align: center;
+    }
+    .stamp {
+      display: inline-flex;
+      align-items: center;
+      border: 1px solid var(--wood-mid);
+      box-shadow: inset 0 0 0 3px var(--plaster), inset 0 0 0 4px rgba(74, 52, 38, 0.25);
+      background: var(--plaster);
+      padding: 3px 12px;
+      font-size: 0.78rem;
+      letter-spacing: 0.12em;
+    }
+    .panel {
+      background: var(--plaster);
+      border: 1px solid var(--line);
+      box-shadow: inset 0 0 0 4px var(--plaster), inset 0 0 0 5px rgba(74, 52, 38, 0.18);
+    }
+    .flight {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      gap: 16px;
+      align-items: center;
+      padding: 16px 22px;
+      margin-bottom: 22px;
+    }
+    .flight strong {
+      display: block;
+      font-family: "Shippori Mincho", serif;
+      letter-spacing: 0.08em;
+      font-weight: 600;
+    }
+    .flight span { color: var(--muted); font-size: 0.85rem; }
+    .flight-arc {
+      min-width: 150px;
+      text-align: center;
+      color: var(--indigo);
+      font-size: 0.78rem;
+      letter-spacing: 0.2em;
+    }
+    .flight-arc svg { width: 100%; height: 36px; display: block; }
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1.35fr) minmax(280px, 0.9fr);
+      gap: 18px;
+      align-items: start;
+    }
+    .map-head, .side-head {
+      display: flex;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: center;
+      padding: 12px 16px 10px;
+      border-bottom: 1px solid var(--line);
+      background:
+        linear-gradient(var(--plaster), var(--plaster)) padding-box,
+        repeating-linear-gradient(90deg, transparent 0 10px, rgba(74, 52, 38, 0.08) 10px 11px);
+    }
+    .map-head h2, .side-head h2, .tips h2 {
+      margin: 0;
+      font-family: "Shippori Mincho", serif;
+      font-size: 1.05rem;
+      font-weight: 600;
+      letter-spacing: 0.22em;
+    }
+    #map { height: 560px; width: 100%; border-top: 1px solid rgba(74, 52, 38, 0.12); }
+    .filters {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--line);
+    }
+    .filters button, .gmap {
+      border: 1px solid var(--wood-mid);
+      background: #fbf6ea;
+      color: var(--ink);
+      padding: 5px 11px;
+      font: inherit;
+      font-size: 0.78rem;
+      letter-spacing: 0.06em;
+      cursor: pointer;
+      box-shadow: 1px 1px 0 var(--wood-mid);
+    }
+    .filters button.is-on {
+      background: var(--wood);
+      color: #f3e6cf;
+      box-shadow: none;
+    }
+    .filters button[data-day="1"].is-on { box-shadow: inset 3px 0 0 var(--day1); }
+    .filters button[data-day="2"].is-on { box-shadow: inset 3px 0 0 var(--day2); }
+    .filters button[data-day="3"].is-on { box-shadow: inset 3px 0 0 var(--day3); }
+    .filters button[data-day="4"].is-on { box-shadow: inset 3px 0 0 var(--day4); }
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px 18px;
+      padding: 10px 16px 12px;
+      font-size: 0.78rem;
+      color: var(--muted);
+    }
+    .legend i {
+      display: inline-block;
+      width: 18px;
+      height: 2px;
+      margin-right: 6px;
+      vertical-align: middle;
+    }
+    .side-panel { max-height: 720px; overflow: auto; }
+    .day + .day { border-top: 1px solid var(--line); }
+    .day-title {
+      position: sticky;
+      top: 0;
+      background: #efe6d2;
+      padding: 12px 16px 8px;
+      font-family: "Shippori Mincho", serif;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+    }
+    .day-title b {
+      font-size: 0.75rem;
+      letter-spacing: 0.16em;
+      font-weight: 500;
+      color: var(--muted);
+    }
+    .item {
+      display: grid;
+      grid-template-columns: 92px 1fr;
+      gap: 8px;
+      padding: 9px 16px 11px;
+      border-left: 2px solid transparent;
+      cursor: pointer;
+    }
+    .item:hover, .item.is-on { background: #eadfca; }
+    .item time { color: var(--muted); font-size: 0.78rem; font-variant-numeric: tabular-nums; }
+    .item strong { display: block; font-size: 0.95rem; font-weight: 600; letter-spacing: 0.04em; }
+    .item p { margin: 2px 0 0; color: var(--muted); font-size: 0.78rem; line-height: 1.65; }
+    .d1 .day-title { color: var(--day1); }
+    .d1 .item.is-on { border-left-color: var(--day1); }
+    .d2 .day-title { color: var(--day2); }
+    .d2 .item.is-on { border-left-color: var(--day2); }
+    .d3 .day-title { color: var(--day3); }
+    .d3 .item.is-on { border-left-color: var(--day3); }
+    .d4 .day-title { color: var(--day4); }
+    .d4 .item.is-on { border-left-color: var(--day4); }
+    .warn {
+      margin: 20px 0 0;
+      padding: 14px 18px;
+      background: #efe0c4;
+      border: 1px solid #b08a4a;
+      box-shadow: inset 0 0 0 3px #efe0c4, inset 0 0 0 4px rgba(138, 75, 42, 0.2);
+      font-size: 0.9rem;
+    }
+    .tips { margin-top: 20px; padding: 18px 20px 8px; }
+    .tips-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 28px; }
+    .tips p { margin: 0 0 14px; font-size: 0.92rem; }
+    .tips strong {
+      font-family: "Shippori Mincho", serif;
+      letter-spacing: 0.12em;
+      font-weight: 600;
+    }
+    .note {
+      margin: 16px 0 0;
+      padding: 12px 4px;
+      color: var(--muted);
+      font-size: 0.8rem;
+      border-top: 1px solid var(--line);
+    }
+    .sea-foot {
+      background-color: var(--sea);
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='36' height='20' viewBox='0 0 36 20'%3E%3Cpath fill='none' stroke='%23efe4cc' stroke-opacity='0.35' stroke-width='1.1' d='M-2 4c5-11 13-11 18 0s13 11 18 0 13-11 18 0'/%3E%3C/svg%3E");
+      background-repeat: repeat-x;
+      color: #d7c6a6;
+      text-align: center;
+      letter-spacing: 0.42em;
+      font-family: "Shippori Mincho", serif;
+      font-size: 0.82rem;
+      padding: 28px 16px 30px;
+    }
+    .marker {
+      width: 26px;
+      height: 26px;
+      color: #f6efe0;
+      font-family: "Shippori Mincho", serif;
+      font-weight: 700;
+      font-size: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid #efe4cc;
+      box-shadow: 1px 1px 0 rgba(42, 33, 24, 0.35);
+    }
+    .marker.small { width: 22px; height: 22px; font-size: 10px; }
+    .leaflet-container { font-family: "Zen Old Mincho", "Yu Mincho", serif; background: #d4c6a8; }
+    .leaflet-popup-content-wrapper {
+      background: var(--plaster);
+      border-radius: 0;
+      border: 1px solid var(--line);
+      box-shadow: 2px 2px 0 rgba(42, 33, 24, 0.2);
+      color: var(--ink);
+    }
+    .leaflet-popup-tip { background: var(--plaster); }
+    .leaflet-popup-content { font-size: 0.88rem; margin: 10px 12px; line-height: 1.6; }
+    .leaflet-bar { border: 1px solid var(--wood-mid) !important; border-radius: 0 !important; box-shadow: 1px 1px 0 var(--wood-mid) !important; }
+    .leaflet-bar a { border-radius: 0 !important; background: #fbf6ea !important; color: var(--ink) !important; }
+    @media (max-width: 900px) {
+      .house { grid-template-columns: 10px minmax(0, 1fr) 10px; }
+      .masthead-inner { gap: 14px; padding: 18px 14px 16px; }
+      .masthead h1 { letter-spacing: 0.08em; }
+      .sign { padding: 12px 16px 10px; }
+      .layout, .tips-grid, .views { grid-template-columns: 1fr; }
+      .flight {
+        grid-template-columns: 1fr;
+        gap: 6px;
+        padding: 14px 16px;
+      }
+      .flight-arc { min-width: 0; padding: 2px 0 6px; }
+      .flight-arc svg { display: none; }
+      .flight > div:last-child { text-align: left !important; }
+      #map { height: 420px; }
+      .side-panel { max-height: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="roof" aria-hidden="true"></div>
+  <header class="masthead">
+    <div class="masthead-inner">
+      <p class="kicker">旅のしおり</p>
+      <div class="sign">
+        <h1>札幌発　伊根・天橋立</h1>
+        <p class="subtitle">三泊四日</p>
+      </div>
+      <a class="home" href="../">目次</a>
+    </div>
+  </header>
+  <div class="beam" aria-hidden="true"></div>
+  <div class="seigaiha" aria-hidden="true"></div>
+
+  <div class="house">
+  <div class="post" aria-hidden="true"></div>
+  <div class="wrap">
+    <p class="lead">京都一泊、伊根の舟屋二泊。天橋立は二日目の午前から夕方まで、景色・散策・食事を急がず楽しむ配分です。地図は実際の道路ルートです。日や予定を選ぶと、その場所へ移ります。</p>
+    <div class="stamps">
+      <span class="stamp">新千歳 ⇄ 伊丹</span>
+      <span class="stamp">京都 一泊</span>
+      <span class="stamp">伊根・舟屋 二泊</span>
+      <span class="stamp">京都で借りて伊丹で返す</span>
+    </div>
+
+    <div class="views">
+      <figure class="view">
+        <img src="images/amanohashidate.png" alt="松の並ぶ砂嘴が湾を横切る、天橋立の眺め" width="1280" height="720" />
+        <figcaption>天橋立</figcaption>
+      </figure>
+      <figure class="view">
+        <img src="images/ine-funaya.png" alt="海にせり出した舟屋が並ぶ、伊根湾の眺め" width="1280" height="720" />
+        <figcaption>伊根の舟屋</figcaption>
+      </figure>
+    </div>
+
+    <section class="flight panel" aria-label="空路">
+      <div>
+        <strong>新千歳空港</strong>
+        <span>一日目 朝出発／四日目 夜到着</span>
+      </div>
+      <div class="flight-arc">
+        <svg viewBox="0 0 180 36" aria-hidden="true">
+          <path d="M8 28 C 60 4, 120 4, 172 28" fill="none" stroke="#3a5366" stroke-width="1.5" stroke-dasharray="4 5" />
+          <rect x="5" y="25" width="6" height="6" fill="#3a5366" />
+          <rect x="169" y="25" width="6" height="6" fill="#3a5366" />
+        </svg>
+        空路　およそ二時間
+      </div>
+      <div style="text-align:right">
+        <strong>大阪国際空港（伊丹）</strong>
+        <span>往路は午前着の便が前提</span>
+      </div>
+    </section>
+
+    <div class="layout">
+      <section class="map-panel panel">
+        <div class="map-head">
+          <h2>関西の絵図</h2>
+          <a class="gmap" id="open-gmaps" href="https://www.google.com/maps/dir/大阪国際空港/京都駅/天橋立駅/伊根町観光案内所" target="_blank" rel="noreferrer">地図を開く</a>
+        </div>
+        <div class="filters" role="tablist" aria-label="表示する日">
+          <button type="button" data-day="all" class="is-on">全日</button>
+          <button type="button" data-day="1">一日　伊丹より京都</button>
+          <button type="button" data-day="2">二日　天橋立より伊根</button>
+          <button type="button" data-day="3">三日　伊根に滞在</button>
+          <button type="button" data-day="4">四日　伊根より伊丹</button>
+        </div>
+        <div id="map" role="img" aria-label="伊丹、京都、天橋立、伊根を結ぶ地図"></div>
+        <div class="legend">
+          <span><i style="background:#3a5366"></i>一日　伊丹より京都（空港バス）約50分</span>
+          <span><i style="background:#8a4b2a"></i>二日　京都より天橋立　約105km／2時間</span>
+          <span><i style="background:#4a6150"></i>二日　天橋立より伊根　約26km／30分</span>
+          <span><i style="background:#5a4650"></i>四日　伊根より伊丹　約154km／2時間半</span>
+        </div>
+      </section>
+
+      <aside class="side-panel panel">
+        <div class="side-head"><h2>日程</h2></div>
+        <div id="timeline"></div>
+      </aside>
+    </div>
+
+    <p class="warn">往路は新千歳を朝出発し、伊丹に午前着となる便を選ぶのが前提です。車は二日目の京都で借り、四日目に伊丹で返す乗り捨てにすると、一日目の市内移動と駐車の負担を減らせます。乗り捨て可否・料金、舟屋宿の夕食、伊根の体験は先に確かめてください。</p>
+
+    <section class="tips panel">
+      <h2>心得</h2>
+      <div class="tips-grid">
+        <div>
+          <p><strong>天橋立を長めに</strong><br>午前はビューランド、午後は松並木から廻旋橋・籠神社。帰路を観光船や自転車にすると無理がありません。伊根入りは十七時台です。</p>
+        </div>
+        <div>
+          <p><strong>伊根で守りたいこと</strong><br>舟屋の多くは私有地です。内部見学は公開施設だけを利用します。遊覧船は天候で運休することがあるため、三日目午前に置き、午後へ振り替えられる余白を残しています。</p>
+        </div>
+      </div>
+    </section>
+    <p class="note">地図の道路はOSRMの走行ルート、背景は国土地理院の淡色地図です。時刻は日付未指定のため目安です。出発日が決まったら航空便と営業時間を最終確認してください。</p>
+  </div>
+  <div class="post" aria-hidden="true"></div>
+  </div>
+  <footer class="sea-foot">舟屋の里　伊根</footer>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script>
+    const places = {
+      itami: { name: "大阪国際空港（伊丹）", lat: 34.7855, lng: 135.4382, sub: "到着・帰着" },
+      kyoto: { name: "京都駅", lat: 34.9858, lng: 135.7588, sub: "1泊目" },
+      ama: { name: "天橋立駅", lat: 35.5571, lng: 135.1851, sub: "2日目を長めに" },
+      viewland: { name: "天橋立ビューランド", lat: 35.5699, lng: 135.1908, sub: "股のぞき・展望" },
+      kago: { name: "元伊勢籠神社", lat: 35.5825, lng: 135.1969, sub: "松並木の先" },
+      ine: { name: "伊根の舟屋", lat: 35.6744, lng: 135.2878, sub: "2・3泊目" },
+      info: { name: "伊根町観光案内所", lat: 35.6726, lng: 135.2865, sub: "舟屋群の入口" },
+      station: { name: "道の駅 舟屋の里伊根", lat: 35.6672, lng: 135.273, sub: "高台の全景" }
+    };
+
+    const routes = {
+      itamiKyoto: [[34.78575,135.4385],[34.78799,135.43212],[34.78942,135.42666],[34.79438,135.4269],[34.79732,135.4268],[34.79872,135.42591],[34.79973,135.42644],[34.80039,135.43542],[34.79973,135.43812],[34.80031,135.4447],[34.80119,135.453],[34.80093,135.45602],[34.79966,135.46121],[34.80328,135.47371],[34.80551,135.48003],[34.80739,135.50116],[34.80612,135.51781],[34.80718,135.52355],[34.80777,135.54034],[34.8133,135.54729],[34.83888,135.56796],[34.86322,135.60734],[34.86767,135.62315],[34.86358,135.63469],[34.86499,135.64575],[34.87424,135.65306],[34.88742,135.66204],[34.90216,135.68322],[34.90671,135.70013],[34.91318,135.70666],[34.93256,135.71405],[34.93919,135.717],[34.94506,135.72314],[34.95394,135.74469],[34.96079,135.74572],[34.966,135.75276],[34.97346,135.75347],[34.97909,135.75365],[34.9865,135.75311],[34.98684,135.75527],[34.98614,135.75661],[34.98621,135.75753]],
+      kyotoAma: [[34.98621,135.75753],[34.98618,135.75525],[34.9893,135.753],[34.99328,135.75252],[34.99624,135.74943],[34.99605,135.74079],[34.99616,135.73164],[34.99607,135.72002],[34.99583,135.71384],[34.99054,135.70214],[34.98566,135.6965],[34.97767,135.689],[34.97219,135.68341],[34.97157,135.67737],[34.97089,135.67395],[34.97573,135.66456],[34.97611,135.65874],[34.97438,135.65997],[34.9799,135.65625],[34.98481,135.6466],[34.99000,135.62022],[34.98941,135.60371],[34.99258,135.57924],[35.00062,135.57176],[35.00908,135.5608],[35.03168,135.54473],[35.0426,135.53614],[35.05713,135.53387],[35.07131,135.51903],[35.08361,135.50814],[35.09513,135.49858],[35.10443,135.48694],[35.11198,135.48094],[35.12284,135.47957],[35.12748,135.47138],[35.12997,135.45857],[35.14118,135.44539],[35.14551,135.43406],[35.14809,135.43003],[35.1572,135.42637],[35.16777,135.42415],[35.18522,135.4179],[35.19423,135.41812],[35.20169,135.42898],[35.21355,135.43177],[35.22388,135.41866],[35.23802,135.41389],[35.24532,135.41731],[35.25338,135.41658],[35.26819,135.40104],[35.26809,135.3892],[35.26716,135.37696],[35.26858,135.36572],[35.27404,135.35141],[35.27607,135.34061],[35.28032,135.33655],[35.30069,135.33113],[35.31838,135.31831],[35.34092,135.30429],[35.35318,135.28932],[35.36384,135.28765],[35.3751,135.26954],[35.38438,135.24434],[35.39539,135.23561],[35.41912,135.21409],[35.42836,135.21053],[35.43634,135.20047],[35.44791,135.18507],[35.46474,135.17319],[35.47403,135.17571],[35.49829,135.17501],[35.50616,135.18693],[35.51377,135.19322],[35.5159,135.19373],[35.51995,135.18995],[35.52555,135.19107],[35.52901,135.19109],[35.53613,135.19377],[35.53981,135.19177],[35.54656,135.18841],[35.5521,135.18663],[35.55709,135.18512]],
+      amaIne: [[35.55709,135.18512],[35.55746,135.18359],[35.55993,135.1782],[35.56117,135.17477],[35.56294,135.17087],[35.55874,135.16606],[35.55401,135.16078],[35.55197,135.15905],[35.55267,135.15398],[35.55386,135.15076],[35.55755,135.15307],[35.56019,135.15351],[35.56411,135.15217],[35.56637,135.15313],[35.56983,135.15557],[35.5714,135.16023],[35.57234,135.16497],[35.57447,135.17189],[35.57611,135.17792],[35.57916,135.18652],[35.58186,135.19376],[35.58194,135.19544],[35.58151,135.19694],[35.58207,135.19882],[35.58376,135.20299],[35.58506,135.20552],[35.59043,135.2083],[35.59451,135.21258],[35.59963,135.21596],[35.60209,135.21942],[35.6078,135.22494],[35.61334,135.23044],[35.61629,135.23447],[35.61756,135.2399],[35.62007,135.24386],[35.62158,135.24487],[35.62565,135.24578],[35.63008,135.24563],[35.63388,135.24756],[35.64014,135.25021],[35.65015,135.25357],[35.6557,135.2587],[35.65697,135.25889],[35.6585,135.25725],[35.66474,135.26129],[35.66715,135.26561],[35.67496,135.27331],[35.68077,135.28512],[35.68255,135.28704],[35.68122,135.28575],[35.67819,135.2866],[35.67618,135.28745],[35.67479,135.288],[35.67447,135.28803]],
+      ineItami: [[35.67447,135.28803],[35.68193,135.28652],[35.66629,135.26323],[35.65554,135.25849],[35.63066,135.24579],[35.61824,135.24162],[35.60457,135.22185],[35.58864,135.20706],[35.58152,135.19678],[35.57627,135.17861],[35.57055,135.15626],[35.55862,135.1536],[35.5514,135.13976],[35.53423,135.12256],[35.51309,135.10664],[35.49292,135.09959],[35.47844,135.0919],[35.46543,135.08526],[35.4593,135.08061],[35.4629,135.0747],[35.45575,135.07572],[35.45056,135.0753],[35.43369,135.06782],[35.424,135.07413],[35.41829,135.08629],[35.40088,135.0822],[35.38273,135.09682],[35.36396,135.10421],[35.35714,135.11288],[35.34126,135.10671],[35.33328,135.09874],[35.32158,135.09759],[35.30461,135.10432],[35.2965,135.11213],[35.29049,135.12495],[35.29042,135.14296],[35.28692,135.16009],[35.28629,135.17784],[35.27233,135.18675],[35.25796,135.18327],[35.23548,135.1887],[35.20962,135.16522],[35.19778,135.15363],[35.18384,135.14029],[35.17325,135.12254],[35.14978,135.12381],[35.14072,135.13339],[35.13833,135.14312],[35.1392,135.15451],[35.1131,135.16575],[35.10293,135.17093],[35.08811,135.1673],[35.06686,135.17961],[35.05015,135.18301],[35.02115,135.17676],[35.01125,135.16195],[34.99182,135.15575],[34.9697,135.14689],[34.95803,135.13348],[34.94165,135.15449],[34.9216,135.15658],[34.90464,135.15557],[34.89355,135.15312],[34.88526,135.16587],[34.88393,135.18214],[34.87072,135.19733],[34.86389,135.21264],[34.84479,135.22591],[34.83826,135.24602],[34.83483,135.26287],[34.83233,135.28368],[34.82751,135.30276],[34.82174,135.31981],[34.81898,135.34038],[34.80721,135.36782],[34.80933,135.3857],[34.81016,135.42409],[34.80341,135.43462],[34.79951,135.42576],[34.7972,135.42677],[34.78882,135.4272],[34.78698,135.43701],[34.78575,135.4385]]
+    };
+
+    const days = [
+      {
+        id: 1,
+        label: "一日　京都へ",
+        stay: "京都泊",
+        color: "#3a5366",
+        bounds: [[34.76, 135.40], [35.02, 135.80]],
+        gmaps: "https://www.google.com/maps/dir/大阪国際空港/京都駅",
+        items: [
+          { time: "07:00〜10:30", title: "新千歳 → 伊丹", place: "itami", note: "午前着の便を選択。到着後は荷物を受け取り、京都へ。" },
+          { time: "11:00〜12:30", title: "伊丹空港 → 京都駅 → ホテル", place: "kyoto", note: "空港バス利用の目安は約50分。ホテルに荷物を預ける。" },
+          { time: "13:00〜17:30", title: "京都で昼食・市内散策", place: "kyoto", note: "祇園〜八坂神社、または京都駅周辺など、翌日に備えて歩きすぎない範囲で。" },
+          { time: "18:00〜", title: "京都泊", place: "kyoto", note: "翌朝は早めに出発できるホテルを京都駅周辺で選ぶ。" }
+        ]
+      },
+      {
+        id: 2,
+        label: "二日　天橋立より伊根",
+        stay: "伊根・舟屋 一泊目",
+        color: "#8a4b2a",
+        bounds: [[34.95, 135.12], [35.72, 135.82]],
+        gmaps: "https://www.google.com/maps/dir/京都駅/天橋立駅/伊根町観光案内所",
+        items: [
+          { time: "07:30", title: "京都駅周辺でレンタカー受取", place: "kyoto", note: "伊丹返却の片道利用で予約。" },
+          { time: "07:45〜10:15", title: "京都 → 天橋立", place: "ama", note: "途中で一度休憩。到着後は駅周辺またはビューランド側に駐車。" },
+          { time: "10:30〜12:00", title: "天橋立ビューランド", place: "viewland", note: "股のぞきと展望を先に。朝の光で日本三景を一望。" },
+          { time: "12:00〜13:30", title: "天橋立で昼食", place: "ama", note: "海鮮や地元食材をゆっくり。混雑期は予約・早めの入店を。" },
+          { time: "13:30〜16:45", title: "松並木散策＋廻旋橋＋元伊勢籠神社", place: "kago", note: "片道を徒歩、復路を観光船・レンタサイクル等にすると無理がない。" },
+          { time: "17:00〜17:45", title: "天橋立 → 伊根", place: "ine", note: "夕景に間に合うよう伊根へ。" },
+          { time: "18:00〜", title: "舟屋宿チェックイン・夕食", place: "ine", note: "海に近い時間を味わう夜。夕食を外で取る場合は必ず事前確認。" }
+        ]
+      },
+      {
+        id: 3,
+        label: "三日　伊根に滞在",
+        stay: "伊根・舟屋 二泊目",
+        color: "#4a6150",
+        bounds: [[35.662, 135.262], [35.686, 135.302]],
+        gmaps: "https://www.google.com/maps/search/?api=1&query=伊根の舟屋",
+        items: [
+          { time: "07:00〜08:30", title: "舟屋の朝景・朝食", place: "ine", note: "人の少ない時間に海辺を散策。私有地に入らない。" },
+          { time: "09:30〜10:30", title: "伊根湾を船で巡る", place: "info", note: "大型遊覧船または小型遊覧船。海側から舟屋を眺める。" },
+          { time: "11:00〜12:00", title: "舟屋内部見学または町歩き", place: "ine", note: "公開施設・予約制の内容を宿泊日に合わせて選ぶ。" },
+          { time: "12:00〜13:30", title: "舟屋日和周辺で昼食", place: "info", note: "混雑を避けたいなら開店直後が安心。" },
+          { time: "14:00〜16:30", title: "道の駅 舟屋の里伊根・カフェ・温泉", place: "station", note: "高台からの全景を見て、前日とは違う伊根の表情を楽しむ。" },
+          { time: "17:00〜", title: "舟屋宿で2泊目", place: "ine", note: "日没、夕食、静かな夜を優先。" }
+        ]
+      },
+      {
+        id: 4,
+        label: "四日　帰路",
+        stay: "新千歳へ帰宅",
+        color: "#5a4650",
+        bounds: [[34.76, 135.12], [35.72, 135.50]],
+        gmaps: "https://www.google.com/maps/dir/伊根町観光案内所/大阪国際空港",
+        items: [
+          { time: "07:00〜09:00", title: "朝食・最後の舟屋散策", place: "ine", note: "チェックアウト前に海辺でゆっくり。" },
+          { time: "09:30〜12:30", title: "伊根 → 伊丹空港", place: "itami", note: "途中休憩を含めた安全側の見積もり。" },
+          { time: "出発2時間前まで", title: "レンタカー返却・搭乗手続き", place: "itami", note: "伊丹発は15:30以降が安心。" },
+          { time: "夕方〜夜", title: "伊丹 → 新千歳", place: "itami", note: "到着後は札幌市内へ。" }
+        ]
+      }
+    ];
+
+    const map = L.map("map", { scrollWheelZoom: true });
+    L.tileLayer("https://cyberjapandata.gsi.go.jp/xyz/pale/{z}/{x}/{y}.png", {
+      attribution: "<a href='https://maps.gsi.go.jp/development/ichiran.html'>国土地理院</a>",
+      maxZoom: 18
+    }).addTo(map);
+
+    const lineStyle = {
+      itamiKyoto: { color: "#3a5366", weight: 4, dashArray: "7 6" },
+      kyotoAma: { color: "#8a4b2a", weight: 4 },
+      amaIne: { color: "#4a6150", weight: 4 },
+      ineItami: { color: "#5a4650", weight: 4 }
+    };
+    const lines = {};
+    Object.keys(routes).forEach((key) => {
+      lines[key] = L.polyline(routes[key], lineStyle[key]).addTo(map);
+    });
+
+    function pin(placeKey, num, color, small) {
+      const p = places[placeKey];
+      const size = small ? 22 : 28;
+      return L.marker([p.lat, p.lng], {
+        icon: L.divIcon({
+          className: "",
+          html: `<div class="marker${small ? " small" : ""}" style="background:${color}">${num}</div>`,
+          iconSize: [size, size],
+          iconAnchor: [size / 2, size / 2],
+          popupAnchor: [0, -14]
+        })
+      }).bindPopup(`<strong>${p.name}</strong><br>${p.sub}`);
+    }
+
+    const markers = {
+      itami: pin("itami", "一", "#3a5366").addTo(map),
+      kyoto: pin("kyoto", "二", "#3a5366").addTo(map),
+      ama: pin("ama", "三", "#8a4b2a").addTo(map),
+      ine: pin("ine", "四", "#4a6150").addTo(map),
+      viewland: pin("viewland", "展", "#8a4b2a", true),
+      kago: pin("kago", "社", "#8a4b2a", true),
+      info: pin("info", "案", "#4a6150", true),
+      station: pin("station", "駅", "#4a6150", true)
+    };
+
+    const allBounds = L.latLngBounds([
+      places.itami, places.kyoto, places.ama, places.ine
+    ].map((p) => [p.lat, p.lng]));
+
+    function setDay(dayId) {
+      document.querySelectorAll(".filters button").forEach((btn) => {
+        btn.classList.toggle("is-on", btn.dataset.day === String(dayId));
+      });
+      Object.values(lines).forEach((line) => map.removeLayer(line));
+      ["viewland", "kago", "info", "station"].forEach((key) => map.removeLayer(markers[key]));
+
+      const gmaps = document.getElementById("open-gmaps");
+      if (dayId === "all") {
+        lines.itamiKyoto.addTo(map);
+        lines.kyotoAma.addTo(map);
+        lines.amaIne.addTo(map);
+        lines.ineItami.addTo(map);
+        map.fitBounds(allBounds, { padding: [36, 36] });
+        gmaps.href = "https://www.google.com/maps/dir/大阪国際空港/京都駅/天橋立駅/伊根町観光案内所";
+        return;
+      }
+      const day = days.find((d) => d.id === Number(dayId));
+      gmaps.href = day.gmaps;
+      if (day.id === 1) {
+        lines.itamiKyoto.addTo(map);
+      } else if (day.id === 2) {
+        lines.kyotoAma.addTo(map);
+        lines.amaIne.addTo(map);
+        markers.viewland.addTo(map);
+        markers.kago.addTo(map);
+      } else if (day.id === 3) {
+        markers.info.addTo(map);
+        markers.station.addTo(map);
+      } else if (day.id === 4) {
+        lines.ineItami.addTo(map);
+      }
+      map.fitBounds(day.bounds, { padding: [28, 28] });
+    }
+
+    const timeline = document.getElementById("timeline");
+    days.forEach((day) => {
+      const section = document.createElement("section");
+      section.className = `day d${day.id}`;
+      section.innerHTML = `<div class="day-title"><span>${day.label}</span><b>${day.stay}</b></div>`;
+      day.items.forEach((item, index) => {
+        const row = document.createElement("article");
+        row.className = "item";
+        row.innerHTML = `<time>${item.time}</time><div><strong>${item.title}</strong><p>${item.note}</p></div>`;
+        row.addEventListener("click", () => {
+          document.querySelectorAll(".item").forEach((el) => el.classList.remove("is-on"));
+          row.classList.add("is-on");
+          setDay(String(day.id));
+          const p = places[item.place];
+          map.flyTo([p.lat, p.lng], day.id === 3 ? 15 : 12, { duration: 0.7 });
+          const marker = markers[item.place] || markers[day.id === 1 && index === 0 ? "itami" : item.place];
+          if (marker) {
+            marker.addTo(map).openPopup();
+          }
+        });
+        section.appendChild(row);
+      });
+      timeline.appendChild(section);
+    });
+
+    document.querySelectorAll(".filters button").forEach((btn) => {
+      btn.addEventListener("click", () => setDay(btn.dataset.day));
+    });
+
+    setDay("all");
+  </script>
+</body>
+</html>
