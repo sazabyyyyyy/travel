@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>札幌発｜当麻・東神楽 二泊三日</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Zen+Antique&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <style>
+    :root {
+      --ink: #243028;
+      --muted: #6d675c;
+      --bark: #ebe4d4;
+      --paper: #f4efe4;
+      --pine: #2f4a38;
+      --moss: #1e2c24;
+      --line: #9a886c;
+      --rust: #a45c32;
+      --slate: #4a5e6e;
+      --stamp: #8c3a32;
+      --day1: #2f4a38;
+      --day2: #a45c32;
+      --day3: #4a5e6e;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; }
+    body {
+      font-family: "Zen Kaku Gothic New", "Hiragino Sans", sans-serif;
+      background-color: #24352c;
+      background-image:
+        repeating-linear-gradient(90deg, rgba(12, 18, 14, 0.22) 0 7px, transparent 7px 28px),
+        radial-gradient(ellipse at 50% 0, #31483a, #1b2821 70%);
+      color: var(--ink);
+      line-height: 1.75;
+    }
+    a { color: var(--pine); text-underline-offset: 3px; }
+    .masthead {
+      background: var(--moss);
+      color: #f4efe4;
+      border-bottom: 8px solid #6b4a2e;
+    }
+    .masthead-inner {
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 22px 20px 18px;
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      gap: 22px;
+      align-items: center;
+    }
+    .kicker {
+      writing-mode: vertical-rl;
+      font-family: "Zen Antique", serif;
+      letter-spacing: 0.4em;
+      font-size: 0.78rem;
+      margin: 0;
+      padding: 10px 6px;
+      border: 1px solid rgba(244, 239, 228, 0.35);
+    }
+    .trail-sign {
+      justify-self: start;
+      background: #e7d8b8;
+      color: var(--ink);
+      padding: 14px 26px 12px;
+      border: 2px solid #5a3d24;
+      box-shadow: inset 0 0 0 4px #e7d8b8, inset 0 0 0 5px #8a6240;
+    }
+    .trail-sign h1 {
+      font-family: "Zen Antique", serif;
+      font-size: clamp(1.45rem, 2.6vw, 2.05rem);
+      font-weight: 400;
+      letter-spacing: 0.14em;
+      margin: 0 0 4px;
+      line-height: 1.35;
+    }
+    .subtitle {
+      margin: 0;
+      letter-spacing: 0.42em;
+      font-size: 0.86rem;
+      color: #5b4a38;
+    }
+    .home {
+      color: #f4efe4;
+      text-decoration: none;
+      border: 1px solid rgba(244, 239, 228, 0.4);
+      padding: 6px 10px;
+      letter-spacing: 0.18em;
+      font-size: 0.78rem;
+    }
+    .home:hover { background: rgba(244, 239, 228, 0.08); }
+    .rings {
+      height: 22px;
+      background:
+        radial-gradient(circle at 18px 11px, transparent 5px, rgba(231, 216, 184, 0.18) 6px, transparent 7px, rgba(231, 216, 184, 0.12) 10px, transparent 11px) 0 0 / 36px 22px,
+        #1a241e;
+    }
+    .sheet {
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 28px 22px 36px;
+      background: var(--bark);
+      box-shadow: 0 0 0 1px rgba(36, 48, 40, 0.18);
+    }
+    .lead { margin: 0 0 16px; max-width: 44em; }
+    .stamps { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 18px; }
+    .stamp {
+      display: inline-flex;
+      border: 1px dashed var(--stamp);
+      color: var(--stamp);
+      background: rgba(140, 58, 50, 0.06);
+      padding: 3px 12px;
+      font-size: 0.78rem;
+      letter-spacing: 0.12em;
+      border-radius: 999px;
+    }
+    .icons {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+      margin: 0 0 22px;
+    }
+    .icon {
+      margin: 0;
+      text-align: center;
+      background: var(--paper);
+      border: 1px solid var(--line);
+      padding: 8px 8px 10px;
+    }
+    .icon img {
+      width: 92px;
+      height: 92px;
+      object-fit: cover;
+      border-radius: 50%;
+      display: block;
+      margin: 0 auto 8px;
+      background: #e8dcc4;
+    }
+    .icon figcaption {
+      font-family: "Zen Antique", serif;
+      letter-spacing: 0.22em;
+      font-size: 0.82rem;
+    }
+    .views {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 14px;
+      margin: 0 0 22px;
+    }
+    .view {
+      margin: 0;
+      background: var(--paper);
+      border: 1px solid var(--line);
+      padding: 8px 8px 6px;
+    }
+    .view img {
+      display: block;
+      width: 100%;
+      height: auto;
+      aspect-ratio: 16 / 9;
+      object-fit: cover;
+      background: #d4cbb8;
+    }
+    .view figcaption {
+      margin: 7px 2px 2px;
+      font-family: "Zen Antique", serif;
+      letter-spacing: 0.22em;
+      font-size: 0.82rem;
+      text-align: center;
+    }
+    .panel {
+      background: var(--paper);
+      border: 1px solid var(--line);
+    }
+    .drive {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      gap: 16px;
+      align-items: center;
+      padding: 16px 20px;
+      margin-bottom: 18px;
+    }
+    .drive strong {
+      display: block;
+      font-family: "Zen Antique", serif;
+      letter-spacing: 0.08em;
+      font-weight: 400;
+    }
+    .drive span { color: var(--muted); font-size: 0.85rem; }
+    .drive-arc {
+      min-width: 160px;
+      text-align: center;
+      color: var(--pine);
+      font-size: 0.78rem;
+      letter-spacing: 0.18em;
+    }
+    .drive-arc svg { width: 100%; height: 36px; display: block; }
+    .choice {
+      display: grid;
+      grid-template-columns: 1.2fr 0.8fr;
+      gap: 0;
+      margin-bottom: 18px;
+    }
+    .choice article { padding: 16px 18px 14px; }
+    .choice h2 {
+      margin: 0 0 8px;
+      font-family: "Zen Antique", serif;
+      font-size: 1.02rem;
+      font-weight: 400;
+      letter-spacing: 0.16em;
+    }
+    .choice p { margin: 0; font-size: 0.9rem; }
+    .choice .pick {
+      background: #2f4a38;
+      color: #f4efe4;
+      border-color: #2f4a38;
+    }
+    .choice .pick h2 { color: #e7d8b8; }
+    .choice .skip { color: var(--muted); }
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1.35fr) minmax(280px, 0.9fr);
+      gap: 16px;
+      align-items: start;
+    }
+    .map-head, .side-head, .tips h2 {
+      display: flex;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: center;
+      padding: 12px 16px 10px;
+      border-bottom: 1px solid var(--line);
+    }
+    .map-head h2, .side-head h2, .tips h2 {
+      margin: 0;
+      font-family: "Zen Antique", serif;
+      font-size: 1.05rem;
+      font-weight: 400;
+      letter-spacing: 0.2em;
+    }
+    #map { height: 560px; width: 100%; }
+    .filters {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--line);
+    }
+    .filters button, .gmap {
+      border: 1px solid var(--pine);
+      background: #f7f1e4;
+      color: var(--ink);
+      padding: 5px 11px;
+      font: inherit;
+      font-size: 0.78rem;
+      letter-spacing: 0.06em;
+      cursor: pointer;
+      border-radius: 999px;
+    }
+    .filters button.is-on {
+      background: var(--pine);
+      color: #f4efe4;
+    }
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px 18px;
+      padding: 10px 16px 12px;
+      font-size: 0.78rem;
+      color: var(--muted);
+    }
+    .legend i {
+      display: inline-block;
+      width: 18px;
+      height: 2px;
+      margin-right: 6px;
+      vertical-align: middle;
+    }
+    .side-panel { max-height: 720px; overflow: auto; }
+    .day + .day { border-top: 1px solid var(--line); }
+    .day-title {
+      position: sticky;
+      top: 0;
+      background: #e8dfcd;
+      padding: 12px 16px 8px;
+      font-family: "Zen Antique", serif;
+      letter-spacing: 0.08em;
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+    }
+    .day-title b {
+      font-size: 0.75rem;
+      letter-spacing: 0.12em;
+      font-weight: 500;
+      color: var(--muted);
+      font-family: "Zen Kaku Gothic New", sans-serif;
+    }
+    .item {
+      display: grid;
+      grid-template-columns: 92px 1fr;
+      gap: 8px;
+      padding: 9px 16px 11px;
+      border-left: 3px solid transparent;
+      cursor: pointer;
+    }
+    .item:hover, .item.is-on { background: #e6dcc8; }
+    .item time { color: var(--muted); font-size: 0.78rem; font-variant-numeric: tabular-nums; }
+    .item strong { display: block; font-size: 0.95rem; font-weight: 700; letter-spacing: 0.02em; }
+    .item p { margin: 2px 0 0; color: var(--muted); font-size: 0.78rem; line-height: 1.65; }
+    .d1 .day-title { color: var(--day1); }
+    .d1 .item.is-on { border-left-color: var(--day1); }
+    .d2 .day-title { color: var(--day2); }
+    .d2 .item.is-on { border-left-color: var(--day2); }
+    .d3 .day-title { color: var(--day3); }
+    .d3 .item.is-on { border-left-color: var(--day3); }
+    .warn {
+      margin: 18px 0 0;
+      padding: 14px 18px;
+      background: #efe0c8;
+      border: 1px solid #a45c32;
+      font-size: 0.9rem;
+    }
+    .tips { margin-top: 18px; padding: 16px 20px 6px; }
+    .tips-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 28px; }
+    .tips p { margin: 0 0 14px; font-size: 0.92rem; }
+    .tips strong {
+      font-family: "Zen Antique", serif;
+      letter-spacing: 0.1em;
+      font-weight: 400;
+    }
+    .note {
+      margin: 16px 0 0;
+      padding: 12px 4px;
+      color: var(--muted);
+      font-size: 0.8rem;
+      border-top: 1px solid var(--line);
+    }
+    .foot {
+      background: var(--moss);
+      color: #cfc4ae;
+      text-align: center;
+      letter-spacing: 0.36em;
+      font-family: "Zen Antique", serif;
+      font-size: 0.82rem;
+      padding: 26px 16px 28px;
+    }
+    .leaflet-div-icon { background: transparent !important; border: none !important; }
+    .marker {
+      width: 28px;
+      height: 28px;
+      color: #f4efe4;
+      font-family: "Zen Antique", serif;
+      font-size: 13px;
+      line-height: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      border: 2px solid #f4efe4;
+      box-shadow: 1px 1px 0 rgba(20, 24, 20, 0.35);
+    }
+    .marker.small { width: 22px; height: 22px; font-size: 11px; border-width: 1px; }
+    .leaflet-container { font-family: "Zen Kaku Gothic New", sans-serif; background: #d5ccb8; }
+    .leaflet-popup-content-wrapper {
+      background: var(--paper);
+      border-radius: 2px;
+      border: 1px solid var(--line);
+      color: var(--ink);
+    }
+    .leaflet-popup-tip { background: var(--paper); }
+    .leaflet-popup-content { font-size: 0.88rem; margin: 10px 12px; line-height: 1.6; }
+    .leaflet-bar { border: 1px solid var(--pine) !important; border-radius: 2px !important; }
+    .leaflet-bar a { background: #f7f1e4 !important; color: var(--ink) !important; }
+    @media (max-width: 900px) {
+      .masthead-inner { gap: 14px; padding: 18px 14px 16px; }
+      .trail-sign { padding: 12px 14px 10px; }
+      .sheet { padding: 22px 14px 28px; }
+      .layout, .tips-grid, .views, .choice, .icons, .drive { grid-template-columns: 1fr; }
+      .drive-arc svg { display: none; }
+      .drive > div:last-child { text-align: left !important; }
+      #map { height: 420px; }
+      .side-panel { max-height: none; }
+    }
+  </style>
+</head>
+<body>
+  <header class="masthead">
+    <div class="masthead-inner">
+      <p class="kicker">旅のしおり</p>
+      <div class="trail-sign">
+        <h1>札幌発　当麻・東神楽</h1>
+        <p class="subtitle">二泊三日　すべて車</p>
+      </div>
+      <a class="home" href="../">目次</a>
+    </div>
+  </header>
+  <div class="rings" aria-hidden="true"></div>
+
+  <div class="sheet">
+    <p class="lead">森林公園駅のあたりから、国道12号で道の駅の印を拾いながら当麻へ。二日目は旭山動物園、三日目は旭岳を先に置き、時間が許せばカムイの杜公園を見て帰る、車の二泊三日です。日付が決まっていないので、時刻は目安です。</p>
+    <div class="stamps">
+      <span class="stamp">二泊三日</span>
+      <span class="stamp">すべて車</span>
+      <span class="stamp">12号の道の駅</span>
+      <span class="stamp">ログハウスとキャビン</span>
+    </div>
+
+    <div class="icons" aria-hidden="true">
+      <figure class="icon">
+        <img src="images/icon-stamp.png" alt="" width="184" height="184" />
+        <figcaption>道の駅</figcaption>
+      </figure>
+      <figure class="icon">
+        <img src="images/icon-bear.png" alt="" width="184" height="184" />
+        <figcaption>旭山動物園</figcaption>
+      </figure>
+      <figure class="icon">
+        <img src="images/icon-ropeway.png" alt="" width="184" height="184" />
+        <figcaption>旭岳</figcaption>
+      </figure>
+    </div>
+
+    <div class="views">
+      <figure class="view">
+        <img src="images/sorachi-road.png" alt="空知の田のあいだをまっすぐ延びる、秋の国道" width="1280" height="720" />
+        <figcaption>空知の12号</figcaption>
+      </figure>
+      <figure class="view">
+        <img src="images/asahidake.png" alt="赤くなった高山の斜面と、ガスのかかった旭岳" width="1280" height="720" />
+        <figcaption>大雪山　旭岳</figcaption>
+      </figure>
+      <figure class="view">
+        <img src="images/log-cabin.png" alt="白樺と針葉樹のあいだに立つ、小さなログハウス" width="1280" height="720" />
+        <figcaption>林の泊まり</figcaption>
+      </figure>
+    </div>
+
+    <section class="drive panel" aria-label="車の往復">
+      <div>
+        <strong>森林公園駅周辺</strong>
+        <span>一日目の朝に出発／三日目の夕方に戻る</span>
+      </div>
+      <div class="drive-arc">
+        <svg viewBox="0 0 180 36" aria-hidden="true">
+          <path d="M8 28 C 60 8, 120 8, 172 28" fill="none" stroke="#2f4a38" stroke-width="1.6" />
+          <circle cx="8" cy="28" r="4" fill="#2f4a38" />
+          <circle cx="172" cy="28" r="4" fill="#2f4a38" />
+        </svg>
+        往路　走行およそ二時間半
+      </div>
+      <div style="text-align:right">
+        <strong>当麻、東神楽、旭岳</strong>
+        <span>帰りはカムイの杜から12号</span>
+      </div>
+    </section>
+
+    <section class="choice panel" aria-label="往路の選び方">
+      <article class="pick">
+        <h2>往路はこのしおりでは12号</h2>
+        <p>三笠、奈井江、たきかわ、ふかがわと印が道沿いに並び、走行はおよそ二時間半。15時のログハウスに余白が残ります。富良野側は札幌から富良野だけで約二時間、そこから当麻まで足すと四時間を超え、チェックインが夕方にずれ込みやすいので、印は12号に寄せます。</p>
+      </article>
+      <article class="skip">
+        <h2>富良野の印は残す</h2>
+        <p>マオイの丘、ふらの、びえい「丘のくら」は景色はよいですが、泊まりが当麻のため往路には向きません。三日目も旭岳と神居町が先なので、富良野は別の旅に置きます。</p>
+      </article>
+    </section>
+
+    <div class="layout">
+      <section class="map-panel panel">
+        <div class="map-head">
+          <h2>上川の絵図</h2>
+          <a class="gmap" id="open-gmaps" href="https://www.google.com/maps/dir/JR森林公園駅/道の駅三笠/道の駅ハウスヤルビ奈井江/道の駅たきかわ/道の駅ライスランドふかがわ/とうまスポーツランドキャンプ場/旭山動物園/ひがしかぐら森林公園/旭岳ロープウェイ/道の駅ひがしかわ道草館/カムイの杜公園/JR森林公園駅" target="_blank" rel="noreferrer">地図を開く</a>
+        </div>
+        <div class="filters" role="tablist" aria-label="表示する日">
+          <button type="button" data-day="all" class="is-on">全日</button>
+          <button type="button" data-day="1">一日　12号の印</button>
+          <button type="button" data-day="2">二日　動物園</button>
+          <button type="button" data-day="3">三日　旭岳より帰宅</button>
+        </div>
+        <div id="map" role="img" aria-label="森林公園駅から当麻、旭山動物園、旭岳、カムイの杜公園を結ぶ地図"></div>
+        <div class="legend">
+          <span><i style="background:#2f4a38"></i>一日　12号　約158km／2時間半</span>
+          <span><i style="background:#a45c32"></i>二日　当麻より東神楽　約28km／40分</span>
+          <span><i style="background:#4a5e6e"></i>三日　旭岳・道草館・杜・帰宅　約203km／3時間半</span>
+        </div>
+      </section>
+
+      <aside class="side-panel panel">
+        <div class="side-head"><h2>日程</h2></div>
+        <div id="timeline"></div>
+      </aside>
+    </div>
+
+    <p class="warn">とうまのログハウスは水道とコンセントだけです。寝具・食器・調理器具は持参（マットと毛布は各300円で借りられる案内あり）。ひがしかぐら森林公園のミニキャビンはフローレ側で、22時から翌8時半までゲート閉鎖、キャビンの受付は13時から17時、チェックアウトは10時です。始発のロープウェイに乗るなら、早朝の出庫を受付へ確かめてください。確かめられない日は、8時半の開門に合わせて山へ向かいます。三笠は月曜休館でスタンプも押せません。両キャンプ場とも秋の終わりで閉場するため、出発前に営業日を見てください。</p>
+
+    <section class="tips panel">
+      <h2>心得</h2>
+      <div class="tips-grid">
+        <div>
+          <p><strong>印は滞在を短く</strong><br>各駅は20〜30分、昼食はふかがわにまとめると15時に間に合います。奈井江は24時間押印なので、月曜に三笠が閉まっていても印は拾えます。</p>
+          <p><strong>二日目の動物園</strong><br>当麻から車で20分弱。5月から10月中旬は9時半開園が目安です。東神楽のチェックインは13時以降なので、園内を長めに取ってからキャビンへ入ります。</p>
+        </div>
+        <div>
+          <p><strong>旭岳は天候と混雑</strong><br>ロープウェイは強風や雷で止まります。紅葉の土日は駐車場待ちが出やすいので、ゲートが開いたらすぐ山へ。姿見の池は一周およそ1時間、登山靴か厚底が安心です。</p>
+          <p><strong>カムイの杜は余裕があれば</strong><br>表記は「杜」の公園です。旭川市神居町にあり、12号で帰る途中に置けます。わくわくエッグは第2月曜休み。時間を食うなら道草館の印だけ押して帰宅しても、この旅の主旨は壊れません。</p>
+        </div>
+      </div>
+    </section>
+    <p class="note">地図の道路はOSRMの走行ルート、背景は国土地理院の淡色地図です。時刻は日付未指定のため目安です。出発日が決まったら、キャンプ場の営業日、動物園の開園、ロープウェイの始発を公式で確かめてください。ユーザー表記の「カムイの社公園」は、旭川市のカムイの杜公園として組んでいます。</p>
+  </div>
+  <footer class="foot">空知の直線から、大雪山の裾へ</footer>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="routes.js"></script>
+  <script>
+    const places = {
+      shinrin: { name: "JR森林公園駅", lat: 43.05645, lng: 141.48129, sub: "出発・帰着" },
+      mikasa: { name: "道の駅 三笠", lat: 43.24663, lng: 141.8045, sub: "北海道1号の駅" },
+      naie: { name: "道の駅 ハウスヤルビ奈井江", lat: 43.43251, lng: 141.8892, sub: "直線道路の中ほど" },
+      takikawa: { name: "道の駅 たきかわ", lat: 43.62344, lng: 141.94097, sub: "12号の中間" },
+      fukagawa: { name: "道の駅 ライスランドふかがわ", lat: 43.69971, lng: 142.07052, sub: "昼食の目安" },
+      tohma: { name: "とうまスポーツランド", lat: 43.83467, lng: 142.53001, sub: "1泊目・ログハウス" },
+      zoo: { name: "旭山動物園", lat: 43.76864, lng: 142.47927, sub: "2日目の主目的" },
+      hks: { name: "ひがしかぐら森林公園", lat: 43.67179, lng: 142.53834, sub: "2泊目・ミニキャビン" },
+      asahidake: { name: "旭岳ロープウェイ", lat: 43.65201, lng: 142.79957, sub: "山麓駅・姿見へ" },
+      michikusa: { name: "道の駅 ひがしかわ「道草館」", lat: 43.69724, lng: 142.50879, sub: "下山あとの印" },
+      kamui: { name: "カムイの杜公園", lat: 43.74593, lng: 142.31675, sub: "帰宅の途中" }
+    };
+
+    const days = [
+      {
+        id: 1,
+        label: "一日　12号の印",
+        stay: "当麻・ログハウス",
+        color: "#2f4a38",
+        bounds: [[43.04, 141.46], [43.86, 142.56]],
+        gmaps: "https://www.google.com/maps/dir/JR森林公園駅/道の駅三笠/道の駅ハウスヤルビ奈井江/道の駅たきかわ/道の駅ライスランドふかがわ/とうまスポーツランドキャンプ場",
+        items: [
+          { time: "08:00", title: "森林公園駅周辺を出発", place: "shinrin", note: "車。三笠の開館8:30に合わせ、急がず出る。" },
+          { time: "08:35〜09:05", title: "道の駅 三笠", place: "mikasa", note: "巨大水車が目印。月曜は休館でスタンプ不可。ラーメン店開店中なら押せる案内あり。" },
+          { time: "09:35〜10:00", title: "ハウスヤルビ奈井江", place: "naie", note: "日本一長い直線の中ほど。スタンプは24時間。短い休憩で足りる。" },
+          { time: "10:20〜10:50", title: "道の駅 たきかわ", place: "takikawa", note: "4〜10月は9時〜18時が目安。休館日は押せない。" },
+          { time: "11:10〜12:10", title: "ライスランドふかがわで昼食", place: "fukagawa", note: "4〜10月は9時〜18時。おにぎりや直売で昼をまとめる。" },
+          { time: "12:15〜13:15", title: "深川より当麻へ", place: "tohma", note: "走行およそ57分。早着してもチェックインは15時。" },
+          { time: "13:30〜15:00", title: "買い出しのあとログハウスへ", place: "tohma", note: "寝具も調理も持参。15時受付、翌朝11時まで。隣にヘルシーシャトー。" }
+        ]
+      },
+      {
+        id: 2,
+        label: "二日　旭山動物園",
+        stay: "東神楽・ミニキャビン",
+        color: "#a45c32",
+        bounds: [[43.66, 142.46], [43.85, 142.55]],
+        gmaps: "https://www.google.com/maps/dir/とうまスポーツランドキャンプ場/旭山動物園/ひがしかぐら森林公園",
+        items: [
+          { time: "09:00〜10:30", title: "当麻を出発", place: "tohma", note: "チェックアウトは11時。園の開園に合わせるなら、荷物をまとめて9時台に出る。" },
+          { time: "10:30〜15:30", title: "旭山動物園", place: "zoo", note: "当麻から約17分。5/1〜10/15は9:30〜17:15、最終入園16:00が目安。出発日の開園を公式で確認。" },
+          { time: "15:30〜16:00", title: "動物園より東神楽へ", place: "hks", note: "およそ23分。ミニキャビンは13〜17時受付、駐車場1台、流し台なし。" },
+          { time: "16:00〜", title: "キャビンと森のゆ", place: "hks", note: "隣接の森のゆ花神楽は別料金・別会社。翌朝はゲート開の8:30が動ける最初の目安。" }
+        ]
+      },
+      {
+        id: 3,
+        label: "三日　旭岳より帰宅",
+        stay: "森林公園駅へ帰着",
+        color: "#4a5e6e",
+        bounds: [[43.04, 141.46], [43.82, 142.82]],
+        gmaps: "https://www.google.com/maps/dir/ひがしかぐら森林公園/旭岳ロープウェイ/道の駅ひがしかわ道草館/カムイの杜公園/JR森林公園駅",
+        items: [
+          { time: "08:30", title: "キャビンを出て旭岳へ", place: "hks", note: "ゲートは8:30開き。始発に乗るなら早朝出庫を前夜に確認。山麓までおよそ35分。" },
+          { time: "09:05〜11:30", title: "旭岳ロープウェイと姿見", place: "asahidake", note: "片道約10分。姿見の池は一周約1時間。平日と土日で始発が違う。強風時は運休。駐車場は紅葉の土日に待ちが出る。" },
+          { time: "11:30〜13:00", title: "道草館で印と昼食", place: "michikusa", note: "下山ルート上。4〜9月は9〜18時が目安。スタンプは開館時間内。" },
+          { time: "13:00〜14:45", title: "カムイの杜公園", place: "kamui", note: "道草館からおよそ34分。神居町。余力がなければ割愛し、12号で帰る。" },
+          { time: "14:45〜16:40", title: "12号で森林公園駅へ", place: "shinrin", note: "杜からおよそ1時間45分。往路で押した駅は通過でよい。休憩するなら奈井江が24時間押印。" }
+        ]
+      }
+    ];
+
+    const map = L.map("map", { scrollWheelZoom: true });
+    L.tileLayer("https://cyberjapandata.gsi.go.jp/xyz/pale/{z}/{x}/{y}.png", {
+      attribution: "<a href='https://maps.gsi.go.jp/development/ichiran.html'>国土地理院</a>",
+      maxZoom: 18
+    }).addTo(map);
+
+    const lineStyle = {
+      day1: { color: "#2f4a38", weight: 4 },
+      day2: { color: "#a45c32", weight: 4 },
+      day3: { color: "#4a5e6e", weight: 4 }
+    };
+    const lines = {};
+    Object.keys(routes).forEach((key) => {
+      lines[key] = L.polyline(routes[key], lineStyle[key]).addTo(map);
+    });
+
+    function pin(placeKey, num, color, small) {
+      const p = places[placeKey];
+      const size = small ? 22 : 28;
+      return L.marker([p.lat, p.lng], {
+        icon: L.divIcon({
+          className: "",
+          html: `<div class="marker${small ? " small" : ""}" style="background:${color}">${num}</div>`,
+          iconSize: [size, size],
+          iconAnchor: [size / 2, size / 2],
+          popupAnchor: [0, -14]
+        })
+      }).bindPopup(`<strong>${p.name}</strong><br>${p.sub}`);
+    }
+
+    const markers = {
+      shinrin: pin("shinrin", "発", "#2f4a38"),
+      tohma: pin("tohma", "泊", "#2f4a38"),
+      zoo: pin("zoo", "園", "#a45c32"),
+      hks: pin("hks", "泊", "#a45c32"),
+      asahidake: pin("asahidake", "岳", "#4a5e6e"),
+      kamui: pin("kamui", "杜", "#4a5e6e"),
+      mikasa: pin("mikasa", "三", "#2f4a38", true),
+      naie: pin("naie", "奈", "#2f4a38", true),
+      takikawa: pin("takikawa", "滝", "#2f4a38", true),
+      fukagawa: pin("fukagawa", "深", "#2f4a38", true),
+      michikusa: pin("michikusa", "草", "#4a5e6e", true)
+    };
+
+    const extras = ["mikasa", "naie", "takikawa", "fukagawa", "michikusa"];
+    const dayPins = {
+      1: ["shinrin", "mikasa", "naie", "takikawa", "fukagawa", "tohma"],
+      2: ["tohma", "zoo", "hks"],
+      3: ["hks", "asahidake", "michikusa", "kamui", "shinrin"]
+    };
+
+    const allBounds = L.latLngBounds(
+      [places.shinrin, places.tohma, places.asahidake, places.kamui].map((p) => [p.lat, p.lng])
+    );
+
+    function showPins(keys) {
+      Object.keys(markers).forEach((key) => {
+        if (keys.includes(key)) markers[key].addTo(map);
+        else map.removeLayer(markers[key]);
+      });
+    }
+
+    function setDay(dayId) {
+      document.querySelectorAll(".filters button").forEach((btn) => {
+        btn.classList.toggle("is-on", btn.dataset.day === String(dayId));
+      });
+      Object.values(lines).forEach((line) => map.removeLayer(line));
+
+      const gmaps = document.getElementById("open-gmaps");
+      const hash = dayId === "all" ? "#day=all" : `#day=${dayId}`;
+      if (location.hash !== hash) history.replaceState(null, "", hash);
+      if (dayId === "all") {
+        lines.day1.addTo(map);
+        lines.day2.addTo(map);
+        lines.day3.addTo(map);
+        showPins(Object.keys(markers));
+        map.fitBounds(allBounds, { padding: [36, 36] });
+        gmaps.href = "https://www.google.com/maps/dir/JR森林公園駅/道の駅三笠/道の駅ハウスヤルビ奈井江/道の駅たきかわ/道の駅ライスランドふかがわ/とうまスポーツランドキャンプ場/旭山動物園/ひがしかぐら森林公園/旭岳ロープウェイ/道の駅ひがしかわ道草館/カムイの杜公園/JR森林公園駅";
+        return;
+      }
+      const day = days.find((d) => d.id === Number(dayId));
+      gmaps.href = day.gmaps;
+      lines[`day${day.id}`].addTo(map);
+      showPins(dayPins[day.id]);
+      map.fitBounds(day.bounds, { padding: [28, 28] });
+    }
+
+    const timeline = document.getElementById("timeline");
+    days.forEach((day) => {
+      const section = document.createElement("section");
+      section.className = `day d${day.id}`;
+      section.innerHTML = `<div class="day-title"><span>${day.label}</span><b>${day.stay}</b></div>`;
+      day.items.forEach((item) => {
+        const row = document.createElement("article");
+        row.className = "item";
+        row.innerHTML = `<time>${item.time}</time><div><strong>${item.title}</strong><p>${item.note}</p></div>`;
+        row.addEventListener("click", () => {
+          document.querySelectorAll(".item").forEach((el) => el.classList.remove("is-on"));
+          row.classList.add("is-on");
+          setDay(String(day.id));
+          const p = places[item.place];
+          const zoom = day.id === 2 ? 12 : 11;
+          map.flyTo([p.lat, p.lng], zoom, { duration: 0.7 });
+          const marker = markers[item.place];
+          if (marker) marker.addTo(map).openPopup();
+        });
+        section.appendChild(row);
+      });
+      timeline.appendChild(section);
+    });
+
+    document.querySelectorAll(".filters button").forEach((btn) => {
+      btn.addEventListener("click", () => setDay(btn.dataset.day));
+    });
+
+    const initial = (location.hash.match(/day=(all|\d)/) || [])[1] || "all";
+    setDay(initial);
+  </script>
+</body>
+</html>
